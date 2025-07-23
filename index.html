@@ -328,7 +328,7 @@
                 { name: 'AI 튜터', type: 'S' },
                 { name: '학생 대시보드', type: 'S' },
                 { name: '학습진단 및 맞춤형 콘텐츠 추천', type: 'S' },
-                { name: '음미유발 학습콘텐츠', type: 'S' },
+                { name: '흥미유발 학습콘텐츠', type: 'S' },
                 { name: '자기주도 학습지원', type: 'S' },
                 { name: '수업 재구성', type: 'T' },
                 { name: 'AI 보조교사', type: 'T' },
@@ -339,7 +339,7 @@
 
             function getSubjectsForGrade(grade) {
                 const gradeNum = parseInt(grade);
-                if (gradeNum <= 2) return ["국어", "수학", "바른 생활", "슬기로운 생활", "즐거운 생활", "안전한 생활"];
+                if (gradeNum <= 2) return ["국어", "수학", "바른 생활", "슬기로운 생활", "즐거운 생활"];
                 if (gradeNum <= 4) return ["국어", "수학", "사회", "과학", "영어", "체육", "음악", "미술", "도덕"];
                 return ["국어", "수학", "사회", "과학", "영어", "체육", "음악", "미술", "도덕", "실과"];
             }
