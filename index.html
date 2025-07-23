@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 디지털 도구 활용 수업설계</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+        :root {
+            --main-bg-color: #f4f8ff;
+            --header-border-color: #b0c4de;
+            --box-border-color: #a9a9a9;
+            --box-bg-color: #ffffff;
+            --pre-post-bg: #e7eff9;
+            --pre-post-title-bg: #d9e2f3;
+            --period-header-bg: #f2f2f2;
+            --watermark-color: rgba(0, 0, 0, 0.08);
+            --color-life-connect: #f8d7da;
+            --color-interaction: #d1e7fd;
+            --color-personalized: #e9d8f3;
+            --color-reflection: #d4edda;
+            --tool-student-color: #007bff;
+            --tool-teacher-color: #ff8c00;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #e9e9e9;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        #app-header {
+            width: 1240px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #app-header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+        #export-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        #main-board {
+            background-color: var(--main-bg-color);
+            padding: 20px;
+            border: 1px solid var(--header-border-color);
+            border-radius: 10px;
+            width: 1200px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        #watermark {
+            position: absolute; 
+            bottom: 25px;
+            right: 25px; 
+            font-size: 16px;
+            font-weight: bold; 
+            color: var(--watermark-color); 
+            pointer-events: none;
+        }
+        
+        .header-grid {
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1.5fr 2fr 1fr;
+            gap: 10px; 
+            margin-bottom: 20px;
+        }
+
+        .full-width-item {
+            grid-column: 1 / -1;
+        }
+
+        .header-item { display: flex; border: 1px solid var(--box-border-color); }
+        .header-item .label {
+            background-color: var(--period-header-bg); padding: 8px 12px;
+            font-weight: 500; white-space: nowrap; display: flex;
+            align-items: center; justify-content: center; border-right: 1px solid var(--box-border-color);
+        }
+        .header-item .value {
+            padding: 8px; flex-grow: 1; background-color: var(--box-bg-color);
+            outline: none; min-height: 20px;
+        }
+        .header-item select {
+            flex-grow: 1; border: none; background-color: white;
+            padding: 8px; outline: none; font-family: 'Noto Sans KR', sans-serif; font-size: 14px;
+        }
+        .header-item .value:focus { box-shadow: 0 0 0 2px rgba(76, 149, 255, 0.5); }
+
+        .content-grid {
+            display: grid; grid-template-columns: 180px 1fr 180px;
+            gap: 15px; align-items: stretch;
+        }
+
+        .grid-column { display: flex; flex-direction: column; gap: 10px; }
+
+        .pre-class, .post-class {
+            background-color: var(--pre-post-bg); border: 1px solid var(--box-border-color);
+            border-radius: 5px; padding: 10px; text-align: center; flex-grow: 1;
+        }
+
+        .pre-class .title, .post-class .title {
+            background-color: var(--pre-post-title-bg); font-weight: bold;
+            padding: 8px; border-radius: 3px; margin-bottom: 10px;
+        }
+
+        .content-box {
+            background-color: var(--box-bg-color); border: 1px solid var(--box-border-color);
+            padding: 8px; border-radius: 3px; margin-bottom: 8px; text-align: left;
+        }
+        
+        .content-box [contenteditable="true"] { outline: none; min-height: 20px; }
+        .content-box [contenteditable="true"]:focus { box-shadow: 0 0 0 2px rgba(76, 149, 255, 0.5); }
+        
+        .periods-container {
+            display: flex; flex-wrap: wrap; gap: 10px;
+            padding-bottom: 10px; align-items: flex-start;
+        }
+
+        .period-block {
+            border: 1px solid var(--box-border-color); border-radius: 5px;
+            background-color: var(--box-bg-color); width: 260px;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        .period-header {
+            background-color: var(--period-header-bg); padding: 8px; font-weight: bold;
+            border-bottom: 1px solid var(--box-border-color); display: flex;
+            justify-content: space-between; align-items: center;
+        }
+        
+        .period-header [contenteditable="true"] { outline: none; flex-grow: 1; padding-right: 25px; }
+
+        .activities-container {
+            padding: 10px; flex-grow: 1; display: flex;
+            flex-direction: column; gap: 10px;
+        }
+
+        .activity-block {
+            border: 1px solid var(--box-border-color); border-radius: 5px;
+            padding: 10px; position: relative;
+        }
+        
+        .activity-block.life-connect { background-color: var(--color-life-connect); }
+        .activity-block.interaction { background-color: var(--color-interaction); }
+        .activity-block.personalized { background-color: var(--color-personalized); }
+        .activity-block.reflection { background-color: var(--color-reflection); }
+
+        .activity-content { margin-bottom: 8px; }
+
+        .activity-controls { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+        .activity-controls button {
+            font-size: 10px; padding: 2px 4px; border: 1px solid #888;
+            background: white; border-radius: 3px; cursor: pointer;
+        }
+        .activity-controls button.selected { font-weight: bold; background-color: #333; color: white; }
+        
+        .delete-btn {
+            position: absolute; top: 5px; right: 5px; background: #ff5c5c;
+            color: white; border: none; border-radius: 50%; width: 20px; height: 20px;
+            cursor: pointer; font-weight: bold; display: flex; align-items: center;
+            justify-content: center; line-height: 1; opacity: 0.3; transition: opacity 0.2s;
+        }
+        .period-block:hover .delete-btn, .activity-block:hover .delete-btn { opacity: 1; }
+        
+        .add-btn {
+            background-color: #4CAF50; color: white; border: none; padding: 8px 12px;
+            cursor: pointer; border-radius: 5px; margin-top: 10px; align-self: center;
+        }
+
+        .placed-tools-container {
+            margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc;
+            display: flex; flex-direction: column; gap: 5px; text-align: left;
+        }
+
+        .placed-tool {
+            display: flex; align-items: center; gap: 5px; font-size: 13px;
+        }
+        .placed-tool .tool-prefix { font-weight: bold; }
+        .placed-tool .tool-prefix.student { color: var(--tool-student-color); }
+        .placed-tool .tool-prefix.teacher { color: var(--tool-teacher-color); }
+        .placed-tool .tool-name { flex-grow: 1; outline: none; }
+        .placed-tool .tool-name:focus { background-color: #f0f8ff; }
+        .placed-tool .delete-tool-btn {
+            background: #aaa; color: white; border: none; border-radius: 50%;
+            width: 16px; height: 16px; cursor: pointer; font-size: 12px;
+            display: flex; align-items: center; justify-content: center;
+            line-height: 1; opacity: 0.3;
+        }
+        .placed-tool:hover .delete-tool-btn { opacity: 1; }
+        
+        .add-tool-btn {
+            font-size: 10px !important; padding: 4px 8px !important; margin-top: 5px !important;
+            align-self: flex-start !important; background-color: #777 !important;
+        }
+
+        .export-btn {
+            border: none; padding: 10px 18px;
+            font-size: 16px; border-radius: 5px; cursor: pointer;
+            transition: background-color 0.3s; height: fit-content;
+        }
+        #export-img-btn { background-color: #007bff; color: white; }
+        #export-img-btn:hover { background-color: #0056b3; }
+        #export-excel-btn { background-color: #1D6F42; color: white; }
+        #export-excel-btn:hover { background-color: #144D2E; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: flex; justify-content: center;
+            align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: white; padding: 20px; border-radius: 10px;
+            width: 300px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-content h3 { margin-top: 0; }
+        #tool-list { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; }
+        .tool-list-item {
+            padding: 10px; border: 1px solid #ddd; border-radius: 5px;
+            cursor: pointer; transition: background-color 0.2s;
+        }
+        .tool-list-item:hover { background-color: #f0f0f0; }
+        #close-modal-btn {
+            margin-top: 20px; padding: 8px 16px; width: 100%;
+            background: #dc3545; color: white; border: none; border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <div id="app-header">
+            <h1>AI 디지털 도구 활용 수업설계</h1>
+            <div id="export-buttons">
+                <button id="export-excel-btn" class="export-btn">엑셀로 저장</button>
+                <button id="export-img-btn" class="export-btn">이미지로 저장</button>
+            </div>
+        </div>
+        <div id="main-board">
+            <div id="watermark">서울가동초 백인규</div>
+            
+            <div class="header-grid">
+                <div class="header-item"><span class="label">학년</span><select id="grade-select"></select></div>
+                <div class="header-item"><span class="label">과목</span><select id="subject-select"></select></div>
+                <div class="header-item"><span class="label">단원</span><div class="value" contenteditable="true" data-field="단원"></div></div>
+                <div class="header-item"><span class="label">학습목표</span><div class="value" contenteditable="true" data-field="학습목표"></div></div>
+                <div class="header-item"><span class="label">교사</span><div class="value" contenteditable="true" data-field="교사"></div></div>
+                <div class="header-item full-width-item">
+                    <span class="label">수업 의도</span><div class="value" contenteditable="true" data-field="수업 의도"></div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="grid-column">
+                    <div class="pre-class">
+                        <div class="title">수업 전</div>
+                        <div class="content-box">
+                            <div contenteditable="true" style="font-weight:bold;">1. 수업안 재구성</div>
+                            <div contenteditable="true" style="font-size:13px;">교사는 필요한 콘텐츠를 선별하여 교과서의 수업안을 재구성</div>
+                        </div>
+                        <div class="placed-tools-container"></div>
+                        <button class="add-btn add-tool-btn">+ 도구 추가</button>
+                    </div>
+                </div>
+
+                <div class="grid-column">
+                    <div class="periods-container" id="periods-container"></div>
+                    <button class="add-btn" id="add-period-btn">차시 추가</button>
+                </div>
+
+                <div class="grid-column">
+                    <div class="post-class">
+                        <div class="title">수업 후</div>
+                        <div class="content-box">
+                            <div contenteditable="true" style="font-weight:bold;">1. 성취도 파악</div>
+                            <div contenteditable="true" style="font-size:13px;">교사는 대시보드에서 학급 성취도를 파악하고...</div>
+                        </div>
+                         <div class="placed-tools-container"></div>
+                        <button class="add-btn add-tool-btn">+ 도구 추가</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="tool-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h3>AI 도구 선택</h3>
+            <div id="tool-list"></div>
+            <button id="close-modal-btn">닫기</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const periodsContainer = document.getElementById('periods-container');
+            const addPeriodBtn = document.getElementById('add-period-btn');
+            const exportImgBtn = document.getElementById('export-img-btn');
+            const exportExcelBtn = document.getElementById('export-excel-btn');
+            const mainBoard = document.getElementById('main-board');
+            const toolModal = document.getElementById('tool-modal');
+            const toolList = document.getElementById('tool-list');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const gradeSelect = document.getElementById('grade-select');
+            const subjectSelect = document.getElementById('subject-select');
+
+            let activeToolContainer = null;
+
+            const availableTools = [
+                { name: 'AI 튜터', type: 'S' },
+                { name: '학생 대시보드', type: 'S' },
+                { name: '학습진단 및 맞춤형 콘텐츠 추천', type: 'S' },
+                { name: '음미유발 학습콘텐츠', type: 'S' },
+                { name: '자기주도 학습지원', type: 'S' },
+                { name: '수업 재구성', type: 'T' },
+                { name: 'AI 보조교사', type: 'T' },
+                { name: '교사 대시보드', type: 'T' },
+                { name: '평가 지원', type: 'T' },
+                { name: '소통 도구', type: 'T' },
+            ];
+
+            function getSubjectsForGrade(grade) {
+                const gradeNum = parseInt(grade);
+                if (gradeNum <= 2) return ["국어", "수학", "바른 생활", "슬기로운 생활", "즐거운 생활", "안전한 생활"];
+                if (gradeNum <= 4) return ["국어", "수학", "사회", "과학", "영어", "체육", "음악", "미술", "도덕"];
+                return ["국어", "수학", "사회", "과학", "영어", "체육", "음악", "미술", "도덕", "실과"];
+            }
+            
+            function populateGrades() {
+                for (let i = 1; i <= 6; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i}학년`;
+                    gradeSelect.appendChild(option);
+                }
+            }
+
+            function updateSubjects() {
+                subjectSelect.innerHTML = '';
+                getSubjectsForGrade(gradeSelect.value).forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectSelect.appendChild(option);
+                });
+            }
+
+            gradeSelect.addEventListener('change', updateSubjects);
+
+            function createPeriod(title, activities = []) {
+                const periodId = `period-${Date.now()}-${Math.random()}`;
+                const periodBlock = document.createElement('div');
+                periodBlock.className = 'period-block';
+                periodBlock.id = periodId;
+                periodBlock.innerHTML = `
+                    <button class="delete-btn period-delete-btn" data-target="${periodId}">×</button>
+                    <div class="period-header"><div contenteditable="true">${title}</div></div>
+                    <div class="activities-container"></div>
+                    <button class="add-btn add-activity-btn">활동 추가</button>`;
+                periodsContainer.appendChild(periodBlock);
+                
+                const activitiesContainer = periodBlock.querySelector('.activities-container');
+                if (activities.length > 0) {
+                    activities.forEach(act => createActivity(activitiesContainer, act.title, act.content, act.color));
+                } else {
+                    createActivity(activitiesContainer, '활동: 제목 입력', '활동 내용을 입력하세요.');
+                }
+            }
+
+            function createActivity(container, title, content, colorClass) {
+                const activityId = `activity-${Date.now()}-${Math.random()}`;
+                const activityBlock = document.createElement('div');
+                activityBlock.className = 'activity-block';
+                if(colorClass) activityBlock.classList.add(colorClass);
+                activityBlock.id = activityId;
+                activityBlock.innerHTML = `
+                    <button class="delete-btn activity-delete-btn" data-target="${activityId}">×</button>
+                    <div class="activity-content">
+                        <div contenteditable="true" style="font-weight:bold;">${title}</div>
+                        <div contenteditable="true" style="font-size:13px;">${content}</div>
+                    </div>
+                    <div class="activity-controls">
+                        <button data-color="life-connect" class="${colorClass === 'life-connect' ? 'selected' : ''}">삶/문제</button>
+                        <button data-color="interaction" class="${colorClass === 'interaction' ? 'selected' : ''}">상호작용</button>
+                        <button data-color="personalized" class="${colorClass === 'personalized' ? 'selected' : ''}">개별맞춤</button>
+                        <button data-color="reflection" class="${colorClass === 'reflection' ? 'selected' : ''}">성찰</button>
+                    </div>
+                    <div class="placed-tools-container"></div>
+                    <button class="add-btn add-tool-btn">+ 도구 추가</button>`;
+                container.appendChild(activityBlock);
+            }
+
+            function placeTool(container, tool) {
+                const toolId = `tool-${Date.now()}-${Math.random()}`;
+                const toolEl = document.createElement('div');
+                toolEl.className = 'placed-tool';
+                toolEl.id = toolId;
+                toolEl.innerHTML = `
+                    <span class="tool-prefix ${tool.type === 'S' ? 'student' : 'teacher'}">${tool.type}</span>
+                    <div class="tool-name" contenteditable="true">${tool.name}</div>
+                    <button class="delete-tool-btn" data-target="${toolId}">×</button>
+                `;
+                container.appendChild(toolEl);
+            }
+
+            function openToolModal(targetContainer) {
+                activeToolContainer = targetContainer;
+                toolList.innerHTML = '';
+                availableTools.forEach(tool => {
+                    const item = document.createElement('div');
+                    item.className = 'tool-list-item';
+                    item.textContent = `${tool.type}: ${tool.name}`;
+                    item.addEventListener('click', () => {
+                        placeTool(activeToolContainer, tool);
+                        toolModal.style.display = 'none';
+                    });
+                    toolList.appendChild(item);
+                });
+                toolModal.style.display = 'flex';
+            }
+
+            function createInitialState() {
+                populateGrades();
+                updateSubjects();
+                createPeriod('1-2차시', [{ title: '활동1: 예상하기', content: '본문 내용을 예상하거나...' }]);
+                createPeriod('3-8차시', [{ title: '활동1: 읽고 이해하기', content: '본문을 읽고 내용 파악하기', color: 'personalized' }]);
+            }
+
+            addPeriodBtn.addEventListener('click', () => createPeriod('새 차시'));
+            
+            document.body.addEventListener('click', (e) => {
+                if (e.target.classList.contains('add-activity-btn')) {
+                    const activitiesContainer = e.target.parentElement.querySelector('.activities-container');
+                    createActivity(activitiesContainer, '새 활동', '활동 내용을 입력하세요.');
+                }
+                if (e.target.classList.contains('period-delete-btn') || e.target.classList.contains('activity-delete-btn') || e.target.classList.contains('delete-tool-btn')) {
+                    document.getElementById(e.target.dataset.target)?.remove();
+                }
+                if (e.target.dataset.color) {
+                    const activityBlock = e.target.closest('.activity-block');
+                    if (activityBlock) {
+                        activityBlock.className = 'activity-block';
+                        activityBlock.classList.add(e.target.dataset.color);
+                        e.target.parentElement.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
+                        e.target.classList.add('selected');
+                    }
+                }
+                if (e.target.classList.contains('add-tool-btn')) {
+                    const targetContainer = e.target.previousElementSibling;
+                    openToolModal(targetContainer);
+                }
+            });
+
+            closeModalBtn.addEventListener('click', () => toolModal.style.display = 'none');
+            window.addEventListener('click', (e) => { if (e.target === toolModal) toolModal.style.display = 'none'; });
+
+            // --- Corrected Image Export Logic ---
+            exportImgBtn.addEventListener('click', () => {
+                const originalHeight = mainBoard.scrollHeight;
+                const originalWidth = mainBoard.scrollWidth;
+                mainBoard.style.height = originalHeight + 'px';
+
+                html2canvas(mainBoard, { 
+                    width: originalWidth, 
+                    height: originalHeight, 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false 
+                })
+                .then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = '수업-설계도.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    mainBoard.style.height = '';
+                }).catch(err => {
+                    console.error("이미지 저장 중 오류 발생!", err);
+                    mainBoard.style.height = '';
+                });
+            });
+
+            exportExcelBtn.addEventListener('click', () => {
+                const data = [];
+                // 1. 수업 전
+                const preClassEl = document.querySelector('.pre-class');
+                const preClassContentBoxes = preClassEl.querySelectorAll('.content-box');
+                const preClassTools = Array.from(preClassEl.querySelectorAll('.placed-tool .tool-name')).map(t => t.innerText).join('\n');
+                preClassContentBoxes.forEach(box => {
+                    data.push({
+                        "구분": "수업 전", "차시": "",
+                        "활동 제목": box.children[0].innerText, "활동 내용": box.children[1].innerText,
+                        "활동 유형": "", "AI 도구": preClassTools
+                    });
+                });
+
+                // 2. 참여중심수업 (차시별)
+                document.querySelectorAll('.period-block').forEach(period => {
+                    const periodTitle = period.querySelector('.period-header div').innerText;
+                    period.querySelectorAll('.activity-block').forEach(activity => {
+                        const activityTitle = activity.querySelector('.activity-content div:first-child').innerText;
+                        const activityContent = activity.querySelector('.activity-content div:last-child').innerText;
+                        const activityTypeBtn = activity.querySelector('.activity-controls button.selected');
+                        const activityType = activityTypeBtn ? activityTypeBtn.textContent : '';
+                        const tools = Array.from(activity.querySelectorAll('.placed-tool .tool-name')).map(t => t.innerText).join('\n');
+                        data.push({
+                            "구분": "참여중심수업", "차시": periodTitle,
+                            "활동 제목": activityTitle, "활동 내용": activityContent,
+                            "활동 유형": activityType, "AI 도구": tools
+                        });
+                    });
+                });
+                
+                // 3. 수업 후
+                const postClassEl = document.querySelector('.post-class');
+                const postClassContentBoxes = postClassEl.querySelectorAll('.content-box');
+                const postClassTools = Array.from(postClassEl.querySelectorAll('.placed-tool .tool-name')).map(t => t.innerText).join('\n');
+                postClassContentBoxes.forEach(box => {
+                    data.push({
+                        "구분": "수업 후", "차시": "",
+                        "활동 제목": box.children[0].innerText, "활동 내용": box.children[1].innerText,
+                        "활동 유형": "", "AI 도구": postClassTools
+                    });
+                });
+
+                // Header Info Sheet
+                const headerData = [
+                    { 항목: "학년", 내용: gradeSelect.options[gradeSelect.selectedIndex].text },
+                    { 항목: "과목", 내용: subjectSelect.value },
+                    { 항목: "단원", 내용: document.querySelector('[data-field="단원"]').innerText },
+                    { 항목: "학습목표", 내용: document.querySelector('[data-field="학습목표"]').innerText },
+                    { 항목: "교사", 내용: document.querySelector('[data-field="교사"]').innerText },
+                    { 항목: "수업 의도", 내용: document.querySelector('[data-field="수업 의도"]').innerText }
+                ];
+
+                const wb = XLSX.utils.book_new();
+                const ws_info = XLSX.utils.json_to_sheet(headerData, { skipHeader: true });
+                ws_info['!cols'] = [{wch:15}, {wch:80}];
+                XLSX.utils.book_append_sheet(wb, ws_info, "수업 정보");
+
+                const ws_plan = XLSX.utils.json_to_sheet(data);
+                ws_plan['!cols'] = [{wch:15}, {wch:15}, {wch:30}, {wch:50}, {wch:15}, {wch:40}];
+                XLSX.utils.book_append_sheet(wb, ws_plan, "수업 설계안");
+                
+                XLSX.writeFile(wb, "수업-설계도.xlsx");
+            });
+            
+            createInitialState();
+        });
+    </script>
+</body>
+</html>
