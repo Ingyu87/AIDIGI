@@ -30,7 +30,7 @@
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #e9e9e9;
             margin: 0;
-            padding: 2rem;
+            padding: 1rem;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -41,38 +41,48 @@
             flex-direction: column;
             gap: 20px;
             align-items: center;
+            width: 100%;
         }
 
         #app-header {
-            width: 1240px;
+            width: 100%;
+            max-width: 1240px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
         }
         #app-header h1 {
-            font-size: 24px;
+            font-size: 22px;
             margin: 0;
         }
         #export-buttons {
             display: flex;
             gap: 10px;
+            width: 100%;
+        }
+        
+        .export-btn {
+            flex-grow: 1;
         }
 
         #main-board {
             background-color: var(--main-bg-color);
-            padding: 20px;
+            padding: 15px;
             border: 1px solid var(--header-border-color);
             border-radius: 10px;
-            width: 1200px;
+            width: 100%;
+            max-width: 1200px;
             position: relative;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
 
         #watermark {
             position: absolute; 
-            bottom: 25px;
-            right: 25px; 
-            font-size: 16px;
+            bottom: 15px;
+            right: 15px; 
+            font-size: 14px;
             font-weight: bold; 
             color: var(--watermark-color); 
             pointer-events: none;
@@ -80,7 +90,7 @@
         
         .header-grid {
             display: grid; 
-            grid-template-columns: 1fr 1fr 1.5fr 2fr 1fr;
+            grid-template-columns: 1fr;
             gap: 10px; 
             margin-bottom: 20px;
         }
@@ -106,8 +116,10 @@
         .header-item .value:focus { box-shadow: 0 0 0 2px rgba(76, 149, 255, 0.5); }
 
         .content-grid {
-            display: grid; grid-template-columns: 180px 1fr 180px;
-            gap: 15px; align-items: stretch;
+            display: grid; 
+            grid-template-columns: 1fr;
+            gap: 15px; 
+            align-items: stretch;
         }
 
         .grid-column { display: flex; flex-direction: column; gap: 10px; }
@@ -122,24 +134,21 @@
             background-color: var(--pre-post-title-bg); font-weight: bold;
             padding: 8px; border-radius: 3px; margin-bottom: 10px;
         }
-
-        .content-box {
-            background-color: var(--box-bg-color); border: 1px solid var(--box-border-color);
-            padding: 8px; border-radius: 3px; margin-bottom: 8px; text-align: left;
-        }
-        
-        .content-box [contenteditable="true"] { outline: none; min-height: 20px; }
-        .content-box [contenteditable="true"]:focus { box-shadow: 0 0 0 2px rgba(76, 149, 255, 0.5); }
         
         .periods-container {
-            display: flex; flex-wrap: wrap; gap: 10px;
-            padding-bottom: 10px; align-items: flex-start;
+            display: flex; 
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 10px; 
+            align-items: stretch;
         }
 
         .period-block {
             border: 1px solid var(--box-border-color); border-radius: 5px;
-            background-color: var(--box-bg-color); width: 260px;
+            background-color: var(--box-bg-color);
+            width: 100%;
             display: flex; flex-direction: column; position: relative;
+            box-sizing: border-box;
         }
 
         .period-header {
@@ -235,7 +244,10 @@
         }
         .modal-content {
             background: white; padding: 20px; border-radius: 10px;
-            width: 300px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 300px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-sizing: border-box;
         }
         .modal-content h3 { margin-top: 0; }
         #tool-list { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; }
@@ -248,6 +260,47 @@
             margin-top: 20px; padding: 8px 16px; width: 100%;
             background: #dc3545; color: white; border: none; border-radius: 5px;
         }
+
+        /* --- 반응형 웹 디자인을 위한 미디어 쿼리 --- */
+        @media (min-width: 768px) {
+            body {
+                padding: 2rem;
+            }
+            #app-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            #app-header h1 {
+                font-size: 24px;
+            }
+            #export-buttons {
+                width: auto;
+            }
+            .export-btn {
+                flex-grow: 0;
+            }
+            .header-grid {
+                grid-template-columns: 1fr 1fr 1.5fr 2fr 1fr;
+            }
+            .full-width-item {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 180px 1fr 180px;
+            }
+            .periods-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .period-block {
+                width: 260px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -485,7 +538,8 @@
                     const parent = e.target.parentElement;
                     const activitiesContainer = parent.querySelector('.activities-container');
                     const isSidePanel = parent.classList.contains('pre-class') || parent.classList.contains('post-class');
-                    createActivity(activitiesContainer, '새 활동', '활동 내용을 입력하세요.', null, !isSidePanel);
+                    const isMainPanel = parent.classList.contains('period-block');
+                    createActivity(activitiesContainer, '새 활동', '활동 내용을 입력하세요.', null, isMainPanel);
                 }
                 if (e.target.classList.contains('period-delete-btn') || e.target.classList.contains('activity-delete-btn') || e.target.classList.contains('delete-tool-btn')) {
                     document.getElementById(e.target.dataset.target)?.remove();
