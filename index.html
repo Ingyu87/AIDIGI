@@ -330,7 +330,8 @@
             const closeModalBtn = document.getElementById('close-modal-btn');
             const gradeSelect = document.getElementById('grade-select');
             const subjectSelect = document.getElementById('subject-select');
-            const topicSelect = document.getElementById('topic-select'); 
+            const topicSelect = document.getElementById('topic-select');
+            const watermark = document.getElementById('watermark');
 
             let activeToolContainer = null;
 
@@ -508,6 +509,9 @@
             window.addEventListener('click', (e) => { if (e.target === toolModal) toolModal.style.display = 'none'; });
 
             exportImgBtn.addEventListener('click', () => {
+                // Hide watermark before taking screenshot
+                watermark.style.display = 'none';
+
                 const originalHeight = mainBoard.scrollHeight;
                 const originalWidth = mainBoard.scrollWidth;
                 mainBoard.style.height = originalHeight + 'px';
@@ -524,10 +528,14 @@
                     link.download = '수업-설계도.png';
                     link.href = canvas.toDataURL('image/png');
                     link.click();
-                    mainBoard.style.height = '';
-                }).catch(err => {
+                })
+                .catch(err => {
                     console.error("이미지 저장 중 오류 발생!", err);
+                })
+                .finally(() => {
+                    // Show watermark again after screenshot is taken or if an error occurs
                     mainBoard.style.height = '';
+                    watermark.style.display = '';
                 });
             });
 
